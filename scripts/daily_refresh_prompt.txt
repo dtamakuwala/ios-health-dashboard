@@ -11,10 +11,8 @@ Do the following, in order, and stop immediately (without publishing or pushing 
 
 4. Run `python3 generate_primary_metrics_dashboard.py` and `python3 generate_business_health_dashboard.py` to regenerate primary_metrics_dashboard.html and business_health_dashboard.html.
 
-5. Republish both dashboards via the Artifact tool, passing the SAME existing URLs (not creating new artifacts):
-   - primary_metrics_dashboard.html -> https://claude.ai/code/artifact/674b8fee-b7d4-42e6-90d2-fed3264f0106
-   - business_health_dashboard.html -> https://claude.ai/code/artifact/e911ff48-025c-44f9-b01b-b1b8f3546f78
+5. git add -A, commit with message "Daily refresh <today's date>", and git push to origin main. This is a pre-approved standing daily job — do this automatically without asking for confirmation.
 
-6. git add -A, commit with message "Daily refresh <today's date>", and git push to origin main. This is a pre-approved standing daily job — do this automatically without asking for confirmation.
+Note: the Artifact tool (claude.ai publishing) is NOT available in this headless CLI environment — do not attempt to use it and do not report its absence as an error. The live URLs are served via GitHub Pages from this repo (auto-updates on every push, no publish step needed), plus the claude.ai artifact copies get refreshed separately in interactive sessions.
 
 This is an unattended headless run — do not ask any clarifying questions. If something is ambiguous, make the most conservative choice (e.g. skip a step and report it) rather than guessing destructively.
