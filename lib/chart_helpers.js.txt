@@ -1,0 +1,254 @@
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function fmtUSD(v, decimals=0) {
+  if (v == null || isNaN(v)) return '–';
+  if (Math.abs(v) >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+  if (Math.abs(v) >= 1e3) return '$' + (v/1e3).toFixed(1) + 'K';
+  return '$' + v.toFixed(decimals);
+}
+function fmtPts(v) {
+  if (v == null || isNaN(v)) return '–';
+  if (Math.abs(v) >= 1e9) return (v/1e9).toFixed(2) + 'B';
+  if (Math.abs(v) >= 1e6) return (v/1e6).toFixed(1) + 'M';
+  if (Math.abs(v) >= 1e3) return (v/1e3).toFixed(0) + 'K';
+  return v.toFixed(0);
+}
+function fmtPct(v, decimals=1) {
+  if (v == null || isNaN(v)) return '–';
+  return v.toFixed(decimals) + '%';
+}
+function fmtX(v, decimals=2) {
+  if (v == null || isNaN(v)) return '–';
+  return v.toFixed(decimals) + '×';
+}
+function fmtNum(v) {
+  if (v == null || isNaN(v)) return '–';
+  if (Math.abs(v) >= 1e6) return (v/1e6).toFixed(2) + 'M';
+  if (Math.abs(v) >= 1e3) return (v/1e3).toFixed(1) + 'K';
+  return v.toFixed(0);
+}
+function fmtRatio(v) {
+  if (v == null || isNaN(v)) return '–';
+  return '$' + v.toFixed(3);
+}
+
+function movingAvg(arr, w) {
+  if (w <= 1) return arr;
+  return arr.map((v, i) => {
+    if (v == null) return null;  // preserve nulls — don't smooth into a gap
+    const slice = arr.slice(Math.max(0, i - w + 1), i + 1).filter(x => x != null);
+    if (!slice.length) return null;
+    return slice.reduce((a, b) => a + b, 0) / slice.length;
+  });
+}
+
+function ytdSum(data, key) {
+  return data.reduce((s, r) => s + (r[key] || 0), 0);
+}
+function lastVal(data, key) {
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i][key] != null) return data[i][key];
+  }
+  return null;
+}
+function lastValDate(data, key) {
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i][key] != null) return data[i].date;
+  }
+  return null;
+}
+function deltaVsPrior(data, key, window=7) {
+  const recent = data.slice(-window).map(r => r[key]).filter(x => x != null);
+  const prev = data.slice(-window*2, -window).map(r => r[key]).filter(x => x != null);
+  if (!recent.length || !prev.length) return null;
+  const rAvg = recent.reduce((a,b)=>a+b,0)/recent.length;
+  const pAvg = prev.reduce((a,b)=>a+b,0)/prev.length;
+  return ((rAvg - pAvg) / Math.abs(pAvg)) * 100;
+}
+
+function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps=true) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: color,
+        borderWidth: 1.5,
+        backgroundColor: fillColor,
+        fill: true,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 1.5,
+        tension: 0.3,
+        spanGaps: spanGaps,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          backgroundColor: '#ffffff',
+          borderColor: '#c8d0e4',
+          borderWidth: 1,
+          titleColor: '#6b7799',
+          bodyColor: '#1a2040',
+          titleFont: { size: 10 },
+          bodyFont: { size: 11, weight: '600' },
+          padding: 8,
+          displayColors: false,
+          callbacks: {
+            title: (items) => items[0]?.label || '',
+            label: (item) => {
+              const v = item.raw;
+              if (v == null) return 'No data';
+              return fmt ? fmt(v) : v.toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        x: { display: false },
+        y: {
+          display: true,
+          position: 'right',
+          beginAtZero: false,
+          grid: { display: false },
+          border: { display: false },
+          ticks: {
+            color: '#6b7799',
+            font: { size: 8 },
+            maxTicksLimit: 3,
+            padding: 2,
+            callback: (v) => fmt ? fmt(v) : v.toLocaleString()
+          }
+        }
+      },
+      animation: false,
+    }
+  });
+}
+
+function makeBigChart(canvasId, labels, datasets, refLine=null) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  const chartDatasets = datasets.map(d => ({
+    label: d.label,
+    data: d.data,
+    borderColor: d.color,
+    borderWidth: d.width || 1.5,
+    backgroundColor: d.fill || 'transparent',
+    fill: d.fill ? true : false,
+    pointRadius: 0,
+    pointHoverRadius: 5,
+    pointHoverBackgroundColor: d.color,
+    pointHoverBorderColor: '#fff',
+    pointHoverBorderWidth: 1.5,
+    tension: 0.3,
+    spanGaps: false,
+    borderDash: d.dash || [],
+    yAxisID: d.yAxis || 'y',
+  }));
+  if (refLine) {
+    chartDatasets.push({
+      label: refLine.label,
+      data: labels.map(() => refLine.value),
+      borderColor: refLine.color,
+      borderWidth: 1.5,
+      borderDash: [6, 3],
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      fill: false,
+      yAxisID: 'y',
+    });
+  }
+  // Crosshair plugin
+  const crosshairPlugin = {
+    id: 'crosshair_' + canvasId,
+    afterDraw(chart) {
+      if (!chart._crosshairX) return;
+      const { ctx: c, chartArea: { top, bottom } } = chart;
+      c.save();
+      c.strokeStyle = 'rgba(136,144,168,0.4)';
+      c.lineWidth = 1;
+      c.setLineDash([4, 3]);
+      c.beginPath();
+      c.moveTo(chart._crosshairX, top);
+      c.lineTo(chart._crosshairX, bottom);
+      c.stroke();
+      c.restore();
+    }
+  };
+  const fmt = datasets[0]?.fmt || null;
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: chartDatasets },
+    plugins: [crosshairPlugin],
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      onHover: (evt, elements, chart) => {
+        if (elements.length) {
+          const x = elements[0].element.x;
+          chart._crosshairX = x;
+        } else {
+          chart._crosshairX = null;
+        }
+        chart.draw();
+      },
+      plugins: {
+        legend: { display: datasets.length > 1, labels: { color: '#8890a8', font: { size: 10 }, boxWidth: 10 } },
+        tooltip: {
+          mode: 'index', intersect: false,
+          backgroundColor: '#ffffff', borderColor: '#c8d0e4', borderWidth: 1,
+          titleColor: '#6b7799', bodyColor: '#1a2040',
+          titleFont: { size: 10 }, bodyFont: { size: 11 },
+          padding: 10,
+          callbacks: {
+            label: (item) => {
+              const ds = datasets[item.datasetIndex];
+              const v = item.raw;
+              if (v == null) return item.dataset.label + ': No data';
+              const f = ds?.fmt;
+              const fmtVal = f ? f(v) : v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+              return ' ' + item.dataset.label + ': ' + fmtVal;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8890a8', font: { size: 9 }, maxTicksLimit: 8, maxRotation: 0 },
+          grid: { color: '#1f2338' }
+        },
+        y: {
+          ticks: {
+            color: '#8890a8', font: { size: 9 }, maxTicksLimit: 6,
+            callback: (v) => {
+              const f = datasets[0]?.fmt;
+              return f ? f(v) : v.toLocaleString(undefined, { maximumFractionDigits: 1 });
+            }
+          },
+          grid: { color: '#1f2338' },
+          beginAtZero: false
+        },
+        y2: { display: false }
+      },
+      animation: false,
+    }
+  });
+}
+
+// ── CHART REGISTRY ──────────────────────────────────────────────────────────
+const chartInstances = {};
+function destroyAll() {
+  Object.values(chartInstances).forEach(c => c.destroy());
+  for (const k in chartInstances) delete chartInstances[k];
+  Chart.helpers.each(Chart.instances, c => c.destroy());
+}
+

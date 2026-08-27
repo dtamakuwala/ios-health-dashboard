@@ -1,0 +1,40 @@
+
+<script>
+// ── TOOLTIP ENGINE ──────────────────────────────────────────────────────────
+(function() {
+  const tt = document.createElement('div');
+  tt.className = 'metric-tooltip';
+  document.body.appendChild(tt);
+
+  document.addEventListener('mouseover', function(e) {
+    const icon = e.target.closest('.info-icon');
+    if (!icon) return;
+    const tooltipEl = icon.parentElement.querySelector('.metric-tooltip');
+    if (!tooltipEl) return;
+    tt.textContent = tooltipEl.textContent;
+    tt.classList.add('tt-visible');
+    positionTT(e);
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (tt.classList.contains('tt-visible')) positionTT(e);
+  });
+
+  document.addEventListener('mouseout', function(e) {
+    const icon = e.target.closest('.info-icon');
+    if (icon) tt.classList.remove('tt-visible');
+  });
+
+  function positionTT(e) {
+    const pad = 12;
+    const w = tt.offsetWidth || 240;
+    const h = tt.offsetHeight || 80;
+    let x = e.clientX + pad;
+    let y = e.clientY - h - pad;
+    if (x + w > window.innerWidth - 8) x = e.clientX - w - pad;
+    if (y < 8) y = e.clientY + pad;
+    tt.style.left = x + 'px';
+    tt.style.top  = y + 'px';
+  }
+})();
+</script>
