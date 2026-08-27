@@ -1,0 +1,20 @@
+Daily refresh for the iOS Primary Metrics and iOS Business Health dashboards.
+Working directory: /Users/drew.tamakuwala/Code/ios-health-dashboard
+
+Do the following, in order, and stop immediately (without publishing or pushing anything) if any step fails:
+
+1. Read query_full_metrics.sql and run its full text via the Databricks MCP tool (mcp__uc-function-mcp__execute_sql_read_only, polling with poll_sql_result if it returns PENDING). This returns one row per date with business-health and points-economy fields.
+
+2. Read query_troas_croas.sql and run it the same way. This returns one row per date with g1-g30 troas/croas fields.
+
+3. Transform both result sets into data/raw_full_metrics.json, data/raw_grand_total.json, and data/raw_troas_croas.json, using EXACTLY the field mapping and derivation logic already implemented in cloud_refresh.py's main() function in this repo (read that file for the precise schema — GRAND_TOTAL_FIELDS list, ROAS_WINDOWS, delivery_rate = croas/troas). Overwrite the existing JSON files in data/ with the fresh results.
+
+4. Run `python3 generate_primary_metrics_dashboard.py` and `python3 generate_business_health_dashboard.py` to regenerate primary_metrics_dashboard.html and business_health_dashboard.html.
+
+5. Republish both dashboards via the Artifact tool, passing the SAME existing URLs (not creating new artifacts):
+   - primary_metrics_dashboard.html -> https://claude.ai/code/artifact/674b8fee-b7d4-42e6-90d2-fed3264f0106
+   - business_health_dashboard.html -> https://claude.ai/code/artifact/e911ff48-025c-44f9-b01b-b1b8f3546f78
+
+6. git add -A, commit with message "Daily refresh <today's date>", and git push to origin main. This is a pre-approved standing daily job — do this automatically without asking for confirmation.
+
+This is an unattended headless run — do not ask any clarifying questions. If something is ambiguous, make the most conservative choice (e.g. skip a step and report it) rather than guessing destructively.
