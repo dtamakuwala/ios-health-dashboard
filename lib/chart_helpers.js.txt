@@ -129,7 +129,7 @@ function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps
         y: {
           display: true,
           position: 'right',
-          beginAtZero: false,
+          beginAtZero: true,
           grid: { display: false },
           border: { display: false },
           ticks: {
@@ -246,7 +246,7 @@ function makeBigChart(canvasId, labels, datasets, refLine=null) {
             }
           },
           grid: { color: '#1f2338' },
-          beginAtZero: false
+          beginAtZero: true
         },
         y2: { display: false }
       },

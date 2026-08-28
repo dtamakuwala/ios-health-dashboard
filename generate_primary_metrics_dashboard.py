@@ -165,7 +165,7 @@ function sparklineGeometry(rawValues) {
     .filter(([, v]) => v !== null && v !== undefined && !Number.isNaN(v));
   if (pts.length < 2) return null;
   const vals = pts.map(p => p[1]);
-  const min = Math.min(...vals), max = Math.max(...vals);
+  const min = Math.min(0, ...vals), max = Math.max(...vals);
   const range = (max - min) || 1;
   const n = rawValues.length - 1 || 1;
   const toXY = (i, v) => [
