@@ -114,7 +114,18 @@ function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps
         }
       },
       scales: {
-        x: { display: false },
+        x: {
+          display: true,
+          grid: { display: false },
+          border: { display: false },
+          ticks: {
+            color: '#8890a8',
+            font: { size: 8 },
+            maxTicksLimit: 4,
+            maxRotation: 0,
+            autoSkip: true,
+          },
+        },
         y: {
           display: true,
           position: 'right',

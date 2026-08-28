@@ -116,6 +116,7 @@ HTML_TEMPLATE = """<title>iOS Primary Metrics</title>
   .card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
   .card .value { font-size: 22px; font-weight: 700; margin: 4px 0 10px; }
   .card svg { display: block; width: 100%; height: 48px; }
+  .card .axis { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); margin-top: 2px; }
   .section-title {
     padding: 24px 32px 0;
     font-size: 13px;
@@ -188,6 +189,14 @@ function sparklineSVG(rawValues) {
   </svg>`;
 }
 
+function axisLabelsHTML(dateArr) {
+  if (dateArr.length < 2) return "";
+  const first = dateArr[0];
+  const mid = dateArr[Math.floor((dateArr.length - 1) / 2)];
+  const last = dateArr[dateArr.length - 1];
+  return `<div class="axis"><span>${first}</span><span>${mid}</span><span>${last}</span></div>`;
+}
+
 const containerPrimary = document.getElementById("cards-primary");
 const containerRoas = document.getElementById("cards-roas");
 
@@ -206,6 +215,7 @@ METRICS.forEach(([key, label, kind]) => {
     <div class="label">${label}</div>
     <div class="value">${fmt(total, kind)}</div>
     ${sparklineSVG(values)}
+    ${axisLabelsHTML(dates)}
   `;
   (PRIMARY_KEYS.has(key) ? containerPrimary : containerRoas).appendChild(card);
 
