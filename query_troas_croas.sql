@@ -57,6 +57,7 @@ SELECT
 
 FROM playground.lp_client_performance_peter_3
 WHERE date >= '2026-01-01'
+  AND date < CURRENT_DATE()
   AND main_source = 'MP iOS'
 GROUP BY date
 ORDER BY date

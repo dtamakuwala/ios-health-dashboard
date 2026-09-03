@@ -880,5 +880,6 @@ SELECT
   ) AS total_points_rewarded
 FROM staging
 WHERE blocked = 'false'
+  AND dates < CURRENT_DATE()
 GROUP BY dates
 ORDER BY dates
