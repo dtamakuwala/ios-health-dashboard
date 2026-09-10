@@ -75,7 +75,7 @@ function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps
       datasets: [{
         data: values,
         borderColor: color,
-        borderWidth: 1.5,
+        borderWidth: 2,
         backgroundColor: fillColor,
         fill: true,
         pointRadius: 0,
@@ -119,9 +119,9 @@ function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps
           grid: { display: false },
           border: { display: false },
           ticks: {
-            color: '#8890a8',
-            font: { size: 8 },
-            maxTicksLimit: 4,
+            color: '#6b7799',
+            font: { size: 10 },
+            maxTicksLimit: 5,
             maxRotation: 0,
             autoSkip: true,
           },
@@ -130,13 +130,13 @@ function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps
           display: true,
           position: 'right',
           beginAtZero: true,
-          grid: { display: false },
+          grid: { color: 'rgba(136,144,168,0.15)' },
           border: { display: false },
           ticks: {
             color: '#6b7799',
-            font: { size: 8 },
-            maxTicksLimit: 3,
-            padding: 2,
+            font: { size: 10 },
+            maxTicksLimit: 4,
+            padding: 4,
             callback: (v) => fmt ? fmt(v) : v.toLocaleString()
           }
         }

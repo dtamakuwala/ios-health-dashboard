@@ -71,11 +71,11 @@
   .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .card-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-  .card-val { font-size: 22px; font-weight: 700; line-height: 1; }
+  .card-val { font-size: 18px; font-weight: 700; line-height: 1; }
   .card-delta { font-size: 11px; color: var(--muted); }
   .card-delta .up { color: var(--green); }
   .card-delta .down { color: var(--red); }
-  .card-chart-wrap { height: 80px; position: relative; }
+  .card-chart-wrap { height: 130px; position: relative; }
 
   .big-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px 12px; margin-bottom: 20px; }
   .big-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -317,7 +317,7 @@ function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps
       datasets: [{
         data: values,
         borderColor: color,
-        borderWidth: 1.5,
+        borderWidth: 2,
         backgroundColor: fillColor,
         fill: true,
         pointRadius: 0,
@@ -361,9 +361,9 @@ function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps
           grid: { display: false },
           border: { display: false },
           ticks: {
-            color: '#8890a8',
-            font: { size: 8 },
-            maxTicksLimit: 4,
+            color: '#6b7799',
+            font: { size: 10 },
+            maxTicksLimit: 5,
             maxRotation: 0,
             autoSkip: true,
           },
@@ -372,13 +372,13 @@ function makeMiniChart(canvasId, labels, values, color, fillColor, fmt, spanGaps
           display: true,
           position: 'right',
           beginAtZero: true,
-          grid: { display: false },
+          grid: { color: 'rgba(136,144,168,0.15)' },
           border: { display: false },
           ticks: {
             color: '#6b7799',
-            font: { size: 8 },
-            maxTicksLimit: 3,
-            padding: 2,
+            font: { size: 10 },
+            maxTicksLimit: 4,
+            padding: 4,
             callback: (v) => fmt ? fmt(v) : v.toLocaleString()
           }
         }
