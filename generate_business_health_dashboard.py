@@ -73,6 +73,7 @@ def main():
 
         records.append({
             "date": short_date(r["dates"]),
+            "iso_date": r["dates"],
             "total_rev": total_rev,
             "gc_cost": gc_cost,
             "game_pass_rev": game_pass_revenue,
@@ -110,15 +111,20 @@ def main():
     helpers = read_lib("chart_helpers.js.txt")
     tooltip_engine = read_lib("tooltip_engine.txt")
 
+    first_date = raw[0]["dates"]
+    last_date = raw[-1]["dates"]
+    default_start = min("2026-01-01", last_date)
+    default_start = max(default_start, first_date)
+
     header_shell = header_shell.replace(
-        "iOS Business Health Dashboard",
-        "iOS Business Health Dashboard",
-    ).replace(
         "Jan 1 – Aug 19, 2026 · Last 3 days masked where GC cost lags · Margin basis: pending group alignment",
         f"{date_range_label} · Last 3 days masked where GC cost lags · Databricks (2026 YTD) · Margin (points basis) pending 750pts=$1 confirmation",
     ).replace(
-        '<option value="231" selected>YTD</option>',
-        f'<option value="{n}" selected>YTD</option>',
+        '<input type="date" id="startDate">',
+        f'<input type="date" id="startDate" value="{default_start}" min="{first_date}" max="{last_date}">',
+    ).replace(
+        '<input type="date" id="endDate">',
+        f'<input type="date" id="endDate" value="{last_date}" min="{first_date}" max="{last_date}">',
     )
 
     build_js = BUILD_JS_TEMPLATE
@@ -145,10 +151,15 @@ BUILD_JS_TEMPLATE = r"""
 // ── MAIN BUILD ──────────────────────────────────────────────────────────────
 function build() {
   destroyAll();
-  const n = parseInt(document.getElementById('rangeSelect').value);
+  const startEl = document.getElementById('startDate');
+  const endEl = document.getElementById('endDate');
   const sm = parseInt(document.getElementById('smoothSelect').value);
 
-  const data = RAW.slice(-n);
+  let start = startEl.value;
+  let end = endEl.value;
+  if (start && end && start > end) { [start, end] = [end, start]; }
+
+  const data = RAW.filter(r => (!start || r.iso_date >= start) && (!end || r.iso_date <= end));
 
   const MASK = 3;
   const masked = (arr) => arr.map((v, i) => (i >= arr.length - MASK ? null : v));
@@ -370,7 +381,8 @@ function build() {
   ]);
 }
 
-document.getElementById('rangeSelect').addEventListener('change', build);
+document.getElementById('startDate').addEventListener('change', build);
+document.getElementById('endDate').addEventListener('change', build);
 document.getElementById('smoothSelect').addEventListener('change', build);
 
 build();
